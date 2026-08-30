@@ -1,0 +1,449 @@
+{
+  "name": "FAQ Chatbot Sekolah",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -976,
+        -336
+      ],
+      "id": "c4cf3fe4-c644-41f7-a04c-b274ee58af1c",
+      "name": "When chat message received",
+      "webhookId": "d87ed781-ca11-433f-b744-4f072c875060"
+    },
+    {
+      "parameters": {
+        "model": "dots-studio/dots-3-note-preview:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        96
+      ],
+      "id": "64834ebc-dcf5-44af-9d9c-3144b000579e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "y0gXqgZjGQDN283J",
+          "name": "OpenRouter account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When chat message received').first().json.chatInput }}",
+        "options": {
+          "systemMessage": "Kamu adalah asisten FAQ resmi untuk Politeknik Caltex Riau (PCR).\nJawab pertanyaan HANYA berdasarkan informasi di bawah ini.\nJika pertanyaan di luar konteks ini, jawab dengan sopan bahwa kamu tidak punya informasinya dan sarankan hubungi PMB PCR di pmb.pcr.ac.id.\n\nQ: Dimana alamat kampus PCR?\nA: Jl. Umbansari No. 1, Rumbai, Pekanbaru, Riau 28265.\n\nQ: Bagaimana cara menghubungi PCR?\nA: Telepon (0761) 53939 atau (0761) 554224, email pcr@pcr.ac.id, website pcr.ac.id dan pmb.pcr.ac.id untuk info pendaftaran.\n\nQ: Kapan PCR didirikan dan oleh siapa?\nA: PCR resmi berdiri pada 31 Agustus 2001, diprakarsai oleh PT Caltex Pacific Indonesia bersama Pemerintah Provinsi Riau.\n\nQ: Apa saja program studi D3 (Diploma 3) di PCR?\nA: Teknik Komputer, Teknik Elektronika, Teknik Mekatronika, Teknik Telekomunikasi, dan Akuntansi.\n\nQ: Apa saja program studi D4 (Sarjana Terapan) di PCR?\nA: Teknik Informatika, Sistem Informasi, Teknik Elektronika Telekomunikasi, Teknik Mesin, dan Teknik Listrik.\n\nQ: Apa saja jalur pendaftaran mahasiswa baru di PCR?\nA: Ada 3 jalur utama: PSUD (Penjaringan Siswa Unggul Daerah), UMPCR (Ujian Masuk PCR), dan Ujian Mandiri/CBT (Computer Based Test).\n\nQ: Bagaimana sistem pembayaran biaya kuliah di PCR?\nA: PCR adalah perguruan tinggi swasta, jadi tidak memakai sistem UKT (Uang Kuliah Tunggal) seperti kampus negeri. Biaya terdiri dari matrikulasi/ISO, SPP per semester, dan Biaya Pengembangan Institusi (BPI), dan besarannya berbeda tiap jalur & jenjang. Untuk nominal pastinya, silakan cek pmb.pcr.ac.id/biaya atau hubungi kontak resmi.\n\nQ: Apakah PCR sudah terakreditasi?\nA: Ya, PCR memiliki status terakreditasi \"Unggul\".\n\nQ: Apakah PCR menerima jalur pendaftaran online?\nA: Ya, pendaftaran bisa dilakukan online melalui pmb.pcr.ac.id.\n\nQ: Apa motto/visi Politeknik Caltex Riau?\nA: Motto PCR adalah \"Empowers You to Global Competition\", dengan fokus sebagai perguruan tinggi vokasi unggulan di bidang teknik dan bisnis.\n\n=================================\nKamu punya akses ke tool kalkulator untuk menghitung angka, gunakan kalau user bertanya soal total biaya, perhitungan semester, atau angka lainnya"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "35bde9e4-0206-4364-b0b1-abfc07c3154d",
+      "name": "AI Agent-FAQ"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Kamu adalah classifier intent untuk chatbot kampus PCR. Klasifikasikan pertanyaan user ke SALAH SATU kategori: pendaftaran, biaya, jurusan, dan lainnya. Balas HANYA dengan nama kategorinya, tanpa kata lain"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -672,
+        -336
+      ],
+      "id": "f0b403a9-337d-4dab-bd45-1aad4fa41f48",
+      "name": "AI Agent - Classifier"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"category\": \"pendaftaran\",\n  \"confidence\": \"high\",\n  \"reasoning\": \"User bertanya tentang cara mendaftar sebagai mahasiswa baru\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -512,
+        -112
+      ],
+      "id": "8b7fa4b7-cbcb-4001-80bf-2e0fff8cbdb8",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "=pendaftaran",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b2855dad-6127-4662-9f3c-cb62a10972f0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "54939f98-c53b-4997-88b3-97b8831688ec",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "biaya",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "00fd50b2-9c6f-42c3-b70e-79b398648355",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "jurusan",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        -352
+      ],
+      "id": "8c55bf8d-6bb7-46e0-9216-87c071a182be",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "model": "nvidia/nemotron-3.5-lightning:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        -112
+      ],
+      "id": "349b39e9-f074-4bde-8818-1e9ee476521a",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ZJvLYucbtxLWFELD",
+          "name": "OpenRouter account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "efb7e167-ec3f-4ee5-9f5b-ed2448669e2e",
+              "name": "output",
+              "value": "Untuk mendaftar sebagai mahasiswa baru PCR, kamu bisa lihat panduan lengkapnya di https://pmb.pcr.ac.id/panduan atau daftar langsung di pmb.pcr.ac.id",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -96,
+        -560
+      ],
+      "id": "ee03d4f2-d82a-44fe-943f-94db8326e8d1",
+      "name": "Pendaftaran"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "229acdd5-cbea-47cb-9b0b-1fb0b0d97b83",
+              "name": "output",
+              "value": "Untuk biaya pendaftaran mahasiswa baru di Politeknik Caltex Riau secara lengkap, anda dapat mengakses link yang kami berikan https://pmb.pcr.ac.id/panduan/biaya",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        -416
+      ],
+      "id": "a4c75518-c602-4bdf-af5c-089ed70a1d2d",
+      "name": "Biaya"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9af67c2b-e385-40c1-b4cc-d6502d3dd00f",
+              "name": "output",
+              "value": "Jurusan yang tersedia di Politeknik Caltex Riau dapat anda lihat di link ini  https://pmb.pcr.ac.id/prodi secara lengkap",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        32,
+        -256
+      ],
+      "id": "8b30d29d-adf1-48bd-a838-e0dd8dd3b145",
+      "name": "Jurusan"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        -400
+      ],
+      "id": "b42da92c-0e10-4d5f-b594-20bffe2d2daf",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        320,
+        80
+      ],
+      "id": "a1cbb37e-bdb3-4f21-98f3-46f4456781bd",
+      "name": "Calculator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent-FAQ",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent-FAQ": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent - Classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Classifier": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Pendaftaran",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Biaya",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Jurusan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent-FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pendaftaran": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Biaya": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Jurusan": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        []
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent-FAQ",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9ece0ac9-c138-4994-a2ea-e23d6b1054ed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9293b6eed87aab0662af71b6b1fb89675d8f70ee8db5d289213c7f8abe07d548"
+  },
+  "nodeGroups": [],
+  "id": "H5akvMqHyhcYJoi9",
+  "tags": []
+}
